@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32630.194
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GRBWinAppSync", "WindowsFormsApp1\GRBWinAppSync.csproj", "{29E7CC61-53E6-4924-86D9-02BAE368D956}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Psl.Chase.Utils", "Psl.Chase.Utils\Psl.Chase.Utils.csproj", "{106A2A08-8393-40CE-912A-B3B0BF9D1E4B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{29E7CC61-53E6-4924-86D9-02BAE368D956}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29E7CC61-53E6-4924-86D9-02BAE368D956}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29E7CC61-53E6-4924-86D9-02BAE368D956}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{29E7CC61-53E6-4924-86D9-02BAE368D956}.Debug|x64.Build.0 = Debug|Any CPU
+		{29E7CC61-53E6-4924-86D9-02BAE368D956}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29E7CC61-53E6-4924-86D9-02BAE368D956}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29E7CC61-53E6-4924-86D9-02BAE368D956}.Release|x64.ActiveCfg = Release|Any CPU
+		{29E7CC61-53E6-4924-86D9-02BAE368D956}.Release|x64.Build.0 = Release|Any CPU
+		{106A2A08-8393-40CE-912A-B3B0BF9D1E4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{106A2A08-8393-40CE-912A-B3B0BF9D1E4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{106A2A08-8393-40CE-912A-B3B0BF9D1E4B}.Debug|x64.ActiveCfg = Debug|x64
+		{106A2A08-8393-40CE-912A-B3B0BF9D1E4B}.Debug|x64.Build.0 = Debug|x64
+		{106A2A08-8393-40CE-912A-B3B0BF9D1E4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{106A2A08-8393-40CE-912A-B3B0BF9D1E4B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{106A2A08-8393-40CE-912A-B3B0BF9D1E4B}.Release|x64.ActiveCfg = Release|x64
+		{106A2A08-8393-40CE-912A-B3B0BF9D1E4B}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {59FE1CDD-0F4F-4047-B997-71D400AD16EB}
+	EndGlobalSection
+EndGlobal

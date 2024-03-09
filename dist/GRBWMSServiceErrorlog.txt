@@ -1,0 +1,65 @@
+
+
+[04-03-2024 13:37:22] An exception occurred: syncTimer_Tick(): --System.InvalidOperationException: Cross-thread operation not valid: Control 'lblUpdate' accessed from a thread other than the thread it was created on.
+   at System.Windows.Forms.Control.get_Handle()
+   at System.Windows.Forms.Control.set_WindowText(String value)
+   at System.Windows.Forms.Control.set_Text(String value)
+   at System.Windows.Forms.Label.set_Text(String value)
+   at PSL.GRB.SyncApp.frmSync.SetText(String message) in D:\Ashutosh\TFS\GRB\SyncServiceApp\GRBSyncServiceApp\WindowsFormsApp1\frmSync.cs:line 35
+   at PSL.GRB.SyncApp.GRBSyncAdapter.syncTimer_Tick(Object sender, ElapsedEventArgs e) in D:\Ashutosh\TFS\GRB\SyncServiceApp\GRBSyncServiceApp\WindowsFormsApp1\GRBSyncAdapter.cs:line 120
+
+[04-03-2024 13:37:32] An exception occurred: syncTimer_Tick(): --System.InvalidOperationException: Cross-thread operation not valid: Control 'lblUpdate' accessed from a thread other than the thread it was created on.
+   at System.Windows.Forms.Control.get_Handle()
+   at System.Windows.Forms.Control.set_WindowText(String value)
+   at System.Windows.Forms.Control.set_Text(String value)
+   at System.Windows.Forms.Label.set_Text(String value)
+   at PSL.GRB.SyncApp.frmSync.SetText(String message) in D:\Ashutosh\TFS\GRB\SyncServiceApp\GRBSyncServiceApp\WindowsFormsApp1\frmSync.cs:line 35
+   at PSL.GRB.SyncApp.GRBSyncAdapter.syncTimer_Tick(Object sender, ElapsedEventArgs e) in D:\Ashutosh\TFS\GRB\SyncServiceApp\GRBSyncServiceApp\WindowsFormsApp1\GRBSyncAdapter.cs:line 120
+
+[04-03-2024 13:37:50] An exception occurred: syncTimer_Tick(): --System.InvalidOperationException: Cross-thread operation not valid: Control 'lblUpdate' accessed from a thread other than the thread it was created on.
+   at System.Windows.Forms.Control.get_Handle()
+   at System.Windows.Forms.Control.set_WindowText(String value)
+   at System.Windows.Forms.Control.set_Text(String value)
+   at System.Windows.Forms.Label.set_Text(String value)
+   at PSL.GRB.SyncApp.frmSync.SetText(String message) in D:\Ashutosh\TFS\GRB\SyncServiceApp\GRBSyncServiceApp\WindowsFormsApp1\frmSync.cs:line 35
+   at PSL.GRB.SyncApp.GRBSyncAdapter.syncTimer_Tick(Object sender, ElapsedEventArgs e) in D:\Ashutosh\TFS\GRB\SyncServiceApp\GRBSyncServiceApp\WindowsFormsApp1\GRBSyncAdapter.cs:line 120
+
+[04-03-2024 13:37:53] An exception occurred: syncTimer_Tick(): --System.InvalidOperationException: Cross-thread operation not valid: Control 'lblUpdate' accessed from a thread other than the thread it was created on.
+   at System.Windows.Forms.Control.get_Handle()
+   at System.Windows.Forms.Control.set_WindowText(String value)
+   at System.Windows.Forms.Control.set_Text(String value)
+   at System.Windows.Forms.Label.set_Text(String value)
+   at PSL.GRB.SyncApp.frmSync.SetText(String message) in D:\Ashutosh\TFS\GRB\SyncServiceApp\GRBSyncServiceApp\WindowsFormsApp1\frmSync.cs:line 35
+   at PSL.GRB.SyncApp.GRBSyncAdapter.syncTimer_Tick(Object sender, ElapsedEventArgs e) in D:\Ashutosh\TFS\GRB\SyncServiceApp\GRBSyncServiceApp\WindowsFormsApp1\GRBSyncAdapter.cs:line 120
+
+[04-03-2024 13:38:04] An exception occurred: syncTimer_Tick(): --System.InvalidOperationException: Cross-thread operation not valid: Control 'lblUpdate' accessed from a thread other than the thread it was created on.
+   at System.Windows.Forms.Control.get_Handle()
+   at System.Windows.Forms.Control.set_WindowText(String value)
+   at System.Windows.Forms.Control.set_Text(String value)
+   at System.Windows.Forms.Label.set_Text(String value)
+   at PSL.GRB.SyncApp.frmSync.SetText(String message) in D:\Ashutosh\TFS\GRB\SyncServiceApp\GRBSyncServiceApp\WindowsFormsApp1\frmSync.cs:line 35
+   at PSL.GRB.SyncApp.GRBSyncAdapter.syncTimer_Tick(Object sender, ElapsedEventArgs e) in D:\Ashutosh\TFS\GRB\SyncServiceApp\GRBSyncServiceApp\WindowsFormsApp1\GRBSyncAdapter.cs:line 120
+
+[04-03-2024 13:38:12] An exception occurred: syncTimer_Tick(): --System.InvalidOperationException: Cross-thread operation not valid: Control 'lblUpdate' accessed from a thread other than the thread it was created on.
+   at System.Windows.Forms.Control.get_Handle()
+   at System.Windows.Forms.Control.set_WindowText(String value)
+   at System.Windows.Forms.Control.set_Text(String value)
+   at System.Windows.Forms.Label.set_Text(String value)
+   at PSL.GRB.SyncApp.frmSync.SetText(String message) in D:\Ashutosh\TFS\GRB\SyncServiceApp\GRBSyncServiceApp\WindowsFormsApp1\frmSync.cs:line 35
+   at PSL.GRB.SyncApp.GRBSyncAdapter.syncTimer_Tick(Object sender, ElapsedEventArgs e) in D:\Ashutosh\TFS\GRB\SyncServiceApp\GRBSyncServiceApp\WindowsFormsApp1\GRBSyncAdapter.cs:line 120
+
+[04-03-2024 13:39:36] An exception occurred: syncTimer_Tick(): --System.InvalidOperationException: Cross-thread operation not valid: Control 'lblUpdate' accessed from a thread other than the thread it was created on.
+   at System.Windows.Forms.Control.get_Handle()
+   at System.Windows.Forms.Control.set_WindowText(String value)
+   at System.Windows.Forms.Control.set_Text(String value)
+   at System.Windows.Forms.Label.set_Text(String value)
+   at PSL.GRB.SyncApp.frmSync.SetText(String message) in D:\Ashutosh\TFS\GRB\SyncServiceApp\GRBSyncServiceApp\WindowsFormsApp1\frmSync.cs:line 35
+   at PSL.GRB.SyncApp.GRBSyncAdapter.syncTimer_Tick(Object sender, ElapsedEventArgs e) in D:\Ashutosh\TFS\GRB\SyncServiceApp\GRBSyncServiceApp\WindowsFormsApp1\GRBSyncAdapter.cs:line 120
+
+[04-03-2024 13:39:48] An exception occurred: syncTimer_Tick(): --System.InvalidOperationException: Cross-thread operation not valid: Control 'lblUpdate' accessed from a thread other than the thread it was created on.
+   at System.Windows.Forms.Control.get_Handle()
+   at System.Windows.Forms.Control.set_WindowText(String value)
+   at System.Windows.Forms.Control.set_Text(String value)
+   at System.Windows.Forms.Label.set_Text(String value)
+   at PSL.GRB.SyncApp.frmSync.SetText(String message) in D:\Ashutosh\TFS\GRB\SyncServiceApp\GRBSyncServiceApp\WindowsFormsApp1\frmSync.cs:line 35
+   at PSL.GRB.SyncApp.GRBSyncAdapter.syncTimer_Tick(Object sender, ElapsedEventArgs e) in D:\Ashutosh\TFS\GRB\SyncServiceApp\GRBSyncServiceApp\WindowsFormsApp1\GRBSyncAdapter.cs:line 120
