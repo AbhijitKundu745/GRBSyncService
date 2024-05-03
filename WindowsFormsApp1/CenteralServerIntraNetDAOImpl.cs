@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PSL.GRB.WMS.Service;
+using System.Net;
 
 namespace PSL.GRB.SyncApp
 {
@@ -33,8 +34,8 @@ namespace PSL.GRB.SyncApp
         private string INSERT_STOLineItems = "INSERT INTO STOLineItems (ID,STOID,ItemCode,ItemsDescription,OrderQty,DeliveryItem,DeliveryQty,BatchID,IsActive,IsProcessed,ModifiedDateTime,ServerDateTime)"+
                                               "VALUES(@ID, @STOID_ITEMS, @ItemCode, @ItemsDescription, @OrderQty, @DeliveryItem, @DeliveryQty, @BatchID, @IsActive, @IsProcessed, @ModifiedDateTime, @ServerDateTime)";
 
-        private string INSERT_SODetails = "INSERT INTO SalesOrder (SOID,SONo,SalesDocumentType,SalesDocumentDateTime,OrderNo,DeliveryNo,DeliveryDateTime,UserID,BillingDocument,BillingType,BillingDateTime,PlantID,VendorCode,TransporterName,TruckNo,PANNo,IsActive,IsProcesses,ModifiedDateTime,ServerDateTime)" +
-                                            "VALUES(@SOID,@SONo,@SalesDocumentType,@SalesDocumentDateTime,@OrderNo,@DeliveryNo,@DeliveryDateTime,@UserID,@BillingDocument,@BillingType,@BillingDateTime,@PlantID,@VendorCode,@TransporterName,@TruckNo,@PANNo,@IsActiveSO,@IsProcessedSO,@ModifiedDateTimeSO,@ServerDateTimeSO)";
+        private string INSERT_SODetails = "INSERT INTO SalesOrder (SOID,SONo,SalesDocumentType,SalesDocumentDateTime,OrderNo,DeliveryNo,DeliveryDateTime,UserID,BillingDocument,BillingType,PlantID,VendorCode,TransporterName,TruckNo,PANNo,IsActive,IsProcesses,ModifiedDateTime,ServerDateTime)" +
+                                            "VALUES(@SOID,@SONo,@SalesDocumentType,@SalesDocumentDateTime,@OrderNo,@DeliveryNo,@DeliveryDateTime,@UserID,@BillingDocument,@BillingType,@PlantID,@VendorCode,@TransporterName,@TruckNo,@PANNo,@IsActiveSO,@IsProcessedSO,@ModifiedDateTimeSO,@ServerDateTimeSO)";
 
         private string INSERT_SOLineItems = "INSERT INTO SalesOrderLineItems (ID,SOID,SalesDocumentItem,OrderQty,ItemCode,ItemDescription,IsActive,IsProcessed,ModifiedDateTime,ServerDateTime)" +
                                               "VALUES(@ID,@SOID_ITEMS,@SalesDocumentItem,@OrderQty,@ItemCode,@ItemDescription,@IsActive,@IsProcessed,@ModifiedDateTime,@ServerDateTime)";
@@ -65,6 +66,8 @@ namespace PSL.GRB.SyncApp
         public CenteralServerIntraNetDAOImpl(string connectionString)
         {
             _connectionString = connectionString;
+            //For Enabling the SSL comment out the below line
+            ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
 
         }
 
@@ -546,6 +549,39 @@ namespace PSL.GRB.SyncApp
             return retval;
         }
 
+        public bool CheckAndUpdateTruckNoforSO(string dispatchNo,string currentTruckNumber)
+        {
+            bool retValue = false;
+
+            string existingTruckID = string.Empty;
+            string Query = "Select TruckNo from SalesOrder where SONo = '" + dispatchNo + "'";
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand(Query, connection);
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        if (reader["TruckNo"] != DBNull.Value)
+                            existingTruckID = Convert.ToString(reader["TruckNo"]);
+                    }
+                }
+            }
+
+            if(existingTruckID != currentTruckNumber)
+            {
+                string updateQuery = "Update SalesOrder set TruckNo='" + currentTruckNumber + "' where SONo='" + dispatchNo + "'"; 
+                using (SqlConnection connection = new SqlConnection(ConnectionString))
+                {
+                    connection.Open();
+                    SqlCommand command = new SqlCommand(updateQuery, connection);
+                    command.ExecuteNonQuery();
+                    retValue = true;
+                }
+            }
+            return retValue;
+        }
 
         public int GetSTOLineItemCount(string drnNumber)
         {
@@ -797,8 +833,7 @@ namespace PSL.GRB.SyncApp
                     {
                         foreach (var b in a.items)
                         {
-
-
+                            
                             using (SqlCommand command = centerlServerConnection.CreateCommand())
                             {
                                 if (insertSOCheck == 0 && !CheckifEntryExists(a.dispatchNo, ExistsSOCheckQuery))
@@ -816,7 +851,7 @@ namespace PSL.GRB.SyncApp
                                     command.Parameters.AddWithValue("@UserID", a.createdBy);
                                     command.Parameters.AddWithValue("@BillingDocument", a.billingDocument);
                                     command.Parameters.AddWithValue("@BillingType", a.billingType);
-                                    command.Parameters.AddWithValue("@BillingDateTime", a.billingDate);
+                                    //command.Parameters.AddWithValue("@BillingDateTime", a.billingDate);
                                     command.Parameters.AddWithValue("@PlantID", a.warehouse.plantNumber);
                                     command.Parameters.AddWithValue("@VendorCode", a.payerCode);
                                     command.Parameters.AddWithValue("@TransporterName", a.payerName);
@@ -827,6 +862,20 @@ namespace PSL.GRB.SyncApp
                                     command.Parameters.AddWithValue("@ModifiedDateTimeSO", DateTime.Now);
                                     command.Parameters.AddWithValue("@ServerDateTimeSO", DateTime.Now);
                                     insertSOCheck = command.ExecuteNonQuery();
+                                }
+                                else
+                                {
+                                    //This is a Update Check Truck Number and Call Update if Required...
+                                    try
+                                    {
+                                        CheckAndUpdateTruckNoforSO(a.dispatchNo, a.truckNumber);
+                                    }
+                                    catch(Exception ex)
+                                    {
+                                        Psl.Chase.Utils.LogManager.Logger.LogError("WMS Truck Update Function() ERROR.:" + ex.ToString());
+                                        //Log.Error(Ex);
+                                    }
+                                    
                                 }
 
                                 if (insertSOCheck != 0 && CheckifEntryExists(a.dispatchNo, ExistsSOCheckQuery))
