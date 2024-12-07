@@ -12,8 +12,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
-
-
+using System.Threading;
 
 namespace PSL.GRB.SyncApp
 {
@@ -29,6 +28,8 @@ namespace PSL.GRB.SyncApp
         private string token = string.Empty;
         volatile bool isProcessing = false;
         public string centralDBConnString = string.Empty;
+        private static Mutex _mutex = new Mutex(false, "Global\\WMSSync2");
+        private DateTime tokenExpiration;
         CenteralServerIntraNetDAOImpl _centralDAO = null;
 
         public GRBSyncAdapter(frmSync mainForm)
@@ -131,7 +132,7 @@ namespace PSL.GRB.SyncApp
             try
             {
                 
-                Run();
+              Run();
             }
             catch (Exception ex)
             {
@@ -145,7 +146,7 @@ namespace PSL.GRB.SyncApp
             }
         }
 
-        void Run()
+       async void Run()
         {
             try
             {
@@ -159,13 +160,21 @@ namespace PSL.GRB.SyncApp
 
 
                 List<WMSLogger> ret = _centralDAO.GetLoggers();
+                // Check if the token is expired
+                if (DateTime.Now >= tokenExpiration || token == string.Empty)
+                {
+                    // Token has expired, regenerate it
+                    InitializeToken();
+                }
+               
+                //token = GetAuthorizationToken().access_token;
+          
 
-                token = GetAuthorizationToken().access_token;
 
                 foreach (WMSLogger v in ret)
                 {
                     //string retValue = GetWMSSyncData(v.URL,token);
-                    ParseStringData(v.URL, v.ParserID);
+                   ParseStringData(v.URL, v.ParserID);
                 }
 
                 Suspend = false;
@@ -275,16 +284,36 @@ namespace PSL.GRB.SyncApp
                     url = string.Format(url, WarehouseID, FromtDate, ToDate);
 
                     Psl.Chase.Utils.LogManager.Logger.LogError("URL Call STO " + url);
-
-                    urlReturnValue = GetWMSSyncData(url, token);
-
-                    Psl.Chase.Utils.LogManager.Logger.LogError("URL Return value STO =" + urlReturnValue);
-
-                    ReceivingByTrucks W = Newtonsoft.Json.JsonConvert.DeserializeObject<ReceivingByTrucks>(urlReturnValue);
-                    if (W != null)
+                    
+                    if (_mutex.WaitOne())
                     {
-                        _centralDAO.InsetSTODetails(W);
+                        try
+                        {
+                            urlReturnValue = GetWMSSyncData(url, token);
+
+                            Psl.Chase.Utils.LogManager.Logger.LogError("URL Return value STO =" + urlReturnValue);
+
+                            ReceivingByTrucks W = Newtonsoft.Json.JsonConvert.DeserializeObject<ReceivingByTrucks>(urlReturnValue);
+                            if (W != null && W.content.Count != 0)
+                            {
+                                
+                                _centralDAO.InsetSTODetails(W);
+                               
+                            }
+                        }
+                        finally
+                        {
+                            // Always release the mutex
+                            _mutex.ReleaseMutex();
+                        }
                     }
+                    else
+                    {
+                        // Mutex is already acquired by another instance
+                        _frmMain.SetText("Another instance is already running.");
+                       
+                    }
+
                 }
                 else if (parserID == 8)
                 {
@@ -292,28 +321,46 @@ namespace PSL.GRB.SyncApp
 
                     if (fDate != "")
                         FromtDate = fDate;
+                    //FromtDate = "2024-07-24";
 
                     ToDate = DateTime.Now.ToString("yyyy-MM-dd");
-
-                    url = string.Format(url, WarehouseID, FromtDate, ToDate);
-                    urlReturnValue = GetWMSSyncData(url, token);
-
-                    Psl.Chase.Utils.LogManager.Logger.LogError("URL Call SO " + url);
-
-                    Dispatch W = Newtonsoft.Json.JsonConvert.DeserializeObject<Dispatch>(urlReturnValue);
-
-                    Psl.Chase.Utils.LogManager.Logger.LogError("URL Return value SO =" + urlReturnValue);
-
-
-                    if (W != null)
+                    //ToDate = "2024-07-24";
+                    if (_mutex.WaitOne())
                     {
-                        _centralDAO.InsetSODetails(W);
+                        try
+                        {
+                            url = string.Format(url, WarehouseID, FromtDate, ToDate);
+                            //url = "https://192.168.100.18/wms/api/v1/dispatch?warehouseId=1&fromDateTime=2024-08-03T12:58:00.000Z&toDateTime=2024-08-03T12:59:59.000Z&embedItems=true";
+                            urlReturnValue =GetWMSSyncData(url, token);
+
+                            Psl.Chase.Utils.LogManager.Logger.LogError("URL Call SO " + url);
+
+                            Dispatch W = Newtonsoft.Json.JsonConvert.DeserializeObject<Dispatch>(urlReturnValue);
+
+                            Psl.Chase.Utils.LogManager.Logger.LogError("URL Return value SO =" + urlReturnValue);
+
+
+                            if (W != null && W.content.Count != 0)
+                            {
+                              
+                                _centralDAO.InsetSODetails(W);
+                               
+                            }
+                           
+                        }
+                        finally
+                        {
+                            // Always release the mutex
+                            _mutex.ReleaseMutex();
+                        }
+                    }
+                    else
+                    {
+                        // Mutex is already acquired by another instance
+                        _frmMain.SetText("Another instance is already running.");
                     }
                 }
-                else
-                {
 
-                }
                 return retValue;
             }
             catch (Exception Ex)
@@ -324,8 +371,6 @@ namespace PSL.GRB.SyncApp
                 retValue = false;
                 return retValue;
             }
-
-
             finally
             {
 
@@ -388,21 +433,59 @@ namespace PSL.GRB.SyncApp
             try
             {
 
-                var client = new HttpClient();
-                var request = new HttpRequestMessage(HttpMethod.Get, URL);
-                request.Headers.Add("Accept", "*/*");
-                request.Headers.Add("Authorization", "Bearer " + Token);
-                request.Headers.Add("X-TenantId", "1");
-
-                var response = client.SendAsync(request);
-                Task<string> responseBody = response.Result.Content.ReadAsStringAsync();
-                ReponseConvert = responseBody.Result.ToString();
+                //var client = new HttpClient();
+                using (var client = new HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromMinutes(10);
+                    client.DefaultRequestHeaders.ConnectionClose = true;
+                    var request = new HttpRequestMessage(HttpMethod.Get, URL);
+                    request.Headers.Add("Accept", "*/*");
+                    request.Headers.Add("Authorization", "Bearer " + Token);
+                    request.Headers.Add("X-TenantId", WarehouseID);
+                    try
+                    {
+                        var response = client.SendAsync(request);
+                        //response.EnsureSuccessStatusCode();
+                        //ReponseConvert = await response.Content.ReadAsStringAsync();
+                        Task<string> responseBody = response.Result.Content.ReadAsStringAsync();
+                        ReponseConvert = responseBody.Result.ToString();
+                    }
+                    catch (TaskCanceledException ex) when (ex.CancellationToken.IsCancellationRequested == false)
+                    {
+                        // Handle timeout specifically
+                        LogException("PutReceivingItemInfo(): Timeout occurred --" + ex.ToString());
+                        throw;
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        // handle exception
+                        LogException("GetWMSSyncData(): --" + ex.ToString());
+                        throw;
+                    }
+                }
             }
             catch (Exception ex)
             {
                 LogException("GetWMSSyncData(): --" + ex.ToString());
             }
+            
             return ReponseConvert;
+        }
+        private void InitializeToken()
+        {
+            token = GetAuthorizationToken().access_token;
+
+            // Parse the expiration time from the response
+            if (DateTime.TryParse(GetAuthorizationToken().expires_in, out DateTime expirationTime))
+            {
+                tokenExpiration = expirationTime; // Set the expiration time
+            }
+            else
+            {
+                // Handle parsing error (e.g., log it or throw an exception)
+                LogException("Failed to parse expiration time from token response.");
+                tokenExpiration = DateTime.Now.AddMinutes(300); // Fallback to a default value
+            }
         }
 
     }

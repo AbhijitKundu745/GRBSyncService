@@ -27,18 +27,18 @@ namespace PSL.GRB.SyncApp
         private string INSERT_PalletDetails = "INSERT INTO PalletDetails(UniqueID,CreatedBy,ID,WarehouseID,Name,Length,Width,Height,MaxWeight,SensorID,CreatedAt,UpdatedAt,ServerDatetime) VALUES(@UniqueID,@CreatedBy,@ID,@WarehouseID,@Name,@Length,@Width,@Height,@MaxWeight,@SensorID,@CreatedAt,@UpdatedAt,@ServerDatetime)";
 
         private string INSERT_AssetMaster = "INSERT INTO AssetMaster (AssetID,AName,ADescription,ATypeID,IsActive,UID,CustomerID,TransactionDateTime)VALUES(@AssetID,@AName,@ADescription,@ATypeID,@IsActive,@UID,@CustomerID,@TransactionDateTime)";
-        
-        private string INSERT_STODetails = "INSERT INTO STO (STOID,STONo,CompanyCode,UserID,SupplyingPlantID,ReceivingPlantID,DeliveryNo,TruckNo,IsActive,IsProcessed,DeliveryDateTime,ModifiedDateTime,ServerDateTime)"+
-                                            "VALUES(@STOID, @STONo, @CompanyCode, @UserID, @SupplyingPlantID, @ReceivingPlantID, @DeliveryNo, @TruckNo, @IsActiveSTO, @IsProcessedSTO, @DeliveryDateTime, @ModifiedDateTimeSTO, @ServerDateTimeSTO)";
 
-        private string INSERT_STOLineItems = "INSERT INTO STOLineItems (ID,STOID,ItemCode,ItemsDescription,OrderQty,DeliveryItem,DeliveryQty,BatchID,IsActive,IsProcessed,ModifiedDateTime,ServerDateTime)"+
-                                              "VALUES(@ID, @STOID_ITEMS, @ItemCode, @ItemsDescription, @OrderQty, @DeliveryItem, @DeliveryQty, @BatchID, @IsActive, @IsProcessed, @ModifiedDateTime, @ServerDateTime)";
+        private string INSERT_STODetails = "INSERT INTO STO (STOID,STONo,CompanyCode,UserID,SupplyingPlantID,ReceivingPlantID,DeliveryNo,TruckNo,IsActive,IsProcessed,DeliveryDateTime,ModifiedDateTime,ServerDateTime, WarehouseID)" +
+                                            "VALUES(@STOID, @STONo, @CompanyCode, @UserID, @SupplyingPlantID, @ReceivingPlantID, @DeliveryNo, @TruckNo, @IsActiveSTO, @IsProcessedSTO, @DeliveryDateTime, @ModifiedDateTimeSTO, @ServerDateTimeSTO, @WarehouseID)";
 
-        private string INSERT_SODetails = "INSERT INTO SalesOrder (SOID,SONo,SalesDocumentType,SalesDocumentDateTime,OrderNo,DeliveryNo,DeliveryDateTime,UserID,BillingDocument,BillingType,PlantID,VendorCode,TransporterName,TruckNo,PANNo,IsActive,IsProcesses,ModifiedDateTime,ServerDateTime)" +
-                                            "VALUES(@SOID,@SONo,@SalesDocumentType,@SalesDocumentDateTime,@OrderNo,@DeliveryNo,@DeliveryDateTime,@UserID,@BillingDocument,@BillingType,@PlantID,@VendorCode,@TransporterName,@TruckNo,@PANNo,@IsActiveSO,@IsProcessedSO,@ModifiedDateTimeSO,@ServerDateTimeSO)";
+        private string INSERT_STOLineItems = "INSERT INTO STOLineItems (ID,STOID,ItemCode,ItemsDescription,OrderQty,DeliveryItem,DeliveryQty,UnloadedQty,BatchID,RecordStatus,IsActive,IsProcessed,ModifiedDateTime,ServerDateTime)" +
+                                              "VALUES(@ID, @STOID_ITEMS, @ItemCode, @ItemsDescription, @OrderQty, @DeliveryItem, @DeliveryQty,@UnloadedQty, @BatchID,@RecordStatus, @IsActive, @IsProcessed, @ModifiedDateTime, @ServerDateTime)";
 
-        private string INSERT_SOLineItems = "INSERT INTO SalesOrderLineItems (ID,SOID,SalesDocumentItem,OrderQty,ItemCode,ItemDescription,IsActive,IsProcessed,ModifiedDateTime,ServerDateTime)" +
-                                              "VALUES(@ID,@SOID_ITEMS,@SalesDocumentItem,@OrderQty,@ItemCode,@ItemDescription,@IsActive,@IsProcessed,@ModifiedDateTime,@ServerDateTime)";
+        private string INSERT_SODetails = "INSERT INTO SalesOrder (SOID,SONo,SalesDocumentType,SalesDocumentDateTime,OrderNo,DeliveryNo,DeliveryDateTime,UserID,BillingDocument,BillingType,PlantID,VendorCode,TransporterName,TruckNo,PANNo,IsActive,IsProcesses,ModifiedDateTime,ServerDateTime, WarehouseID)" +
+                                            "VALUES(@SOID,@SONo,@SalesDocumentType,@SalesDocumentDateTime,@OrderNo,@DeliveryNo,@DeliveryDateTime,@UserID,@BillingDocument,@BillingType,@PlantID,@VendorCode,@TransporterName,@TruckNo,@PANNo,@IsActiveSO,@IsProcessedSO,@ModifiedDateTimeSO,@ServerDateTimeSO, @WarehouseID)";
+
+        private string INSERT_SOLineItems = "INSERT INTO SalesOrderLineItems (ID,SOID,SalesDocumentItem,OrderQty,ItemCode,ItemDescription,LoadedQty,RecordStatus,IsActive,IsProcessed,ModifiedDateTime,ServerDateTime)" +
+                                              "VALUES(@ID,@SOID_ITEMS,@SalesDocumentItem,@OrderQty,@ItemCode,@ItemDescription,@LoadedQty,@RecordStatus,@IsActive,@IsProcessed,@ModifiedDateTime,@ServerDateTime)";
 
         //CheckExistDataQuery
         private string ExistWareDataCheckQuery = " SELECT CASE WHEN EXISTS (SELECT * FROM WarehouseDetails WHERE PlantNumber='@CheckDataVar') THEN 1 ELSE 0 END AS IsDataExists";
@@ -56,6 +56,7 @@ namespace PSL.GRB.SyncApp
         private string CheckLineItemCount = "SELECT COUNT(*) as STOLnCount from STOLineItems where STOID=(select STOID from STO where DeliveryNo='@DeliveryNo')";
         //private string ExistAssetMasterDataCheckQuery = "SELECT CASE WHEN EXISTS (SELECT * FROM AssetMaster WHERE AName ='@CheckDataVar') THEN 1 ELSE 0 END AS IsDataExists";
          private string ExistsSOCheckQuery = "SELECT CASE WHEN EXISTS (SELECT * FROM SalesOrder WHERE DeliveryNo='@CheckDataVar') THEN 1 ELSE 0 END AS IsDataExists";
+         private string ExistsSOItemsCheckQuery = "SELECT CASE WHEN EXISTS (SELECT * FROM SalesOrderLineItems SOL, SalesOrder SO WHERE SO.SOID = SOL.SOID AND SO.DeliveryNo='@dispatchNo' AND SOL.SalesDocumentItem = '@orderItemNo' AND ItemCode = '@skuCode') THEN 1 ELSE 0 END AS IsDataExists";
 
         private string STOFROMDATE = "select top 1 CONVERT(char(10), ModifiedDateTime,126) as FromDate from STO order by ModifiedDateTime desc";
 
@@ -754,7 +755,8 @@ namespace PSL.GRB.SyncApp
                                             command.Parameters.AddWithValue("@DeliveryDateTime", Convert.ToDateTime(b.eta));
                                             command.Parameters.AddWithValue("@ModifiedDateTimeSTO", b.updatedAt);
                                             command.Parameters.AddWithValue("@ServerDateTimeSTO", DateTime.Now);
-                                            InsertSTO = command.ExecuteNonQuery();
+                                            command.Parameters.AddWithValue("@WarehouseID", b.warehouse.id);
+                                        InsertSTO = command.ExecuteNonQuery();
                                         }
 
                                         if(InsertSTO!=0 && CheckifEntryExists(b.receivingNo, ExistsSTOCheckQuery))
@@ -769,6 +771,8 @@ namespace PSL.GRB.SyncApp
                                             command.Parameters.AddWithValue("@OrderQty", c.receivingQty);
                                             command.Parameters.AddWithValue("@DeliveryItem", c.orderItemNumber);
                                             command.Parameters.AddWithValue("@DeliveryQty", string.Empty);
+                                            command.Parameters.AddWithValue("@UnloadedQty", 0);
+                                            command.Parameters.AddWithValue("@RecordStatus", c.sku.recordStatus);
                                             command.Parameters.AddWithValue("@BatchID", c.batchNumber);
                                             command.Parameters.AddWithValue("@IsActive", 1);
                                             command.Parameters.AddWithValue("@IsProcessed", 1);
@@ -814,8 +818,6 @@ namespace PSL.GRB.SyncApp
             {
 
             }
-
-
         }
 
         public bool InsetSODetails(Dispatch SO)
@@ -843,14 +845,14 @@ namespace PSL.GRB.SyncApp
                                     soId = Guid.NewGuid().ToString();
                                     command.Parameters.AddWithValue("@SOID", soId);
                                     command.Parameters.AddWithValue("@SONo", a.dispatchNo);
-                                    command.Parameters.AddWithValue("@SalesDocumentType", b.orderType);
+                                    command.Parameters.AddWithValue("@SalesDocumentType", string.Empty);
                                     command.Parameters.AddWithValue("@SalesDocumentDateTime", DateTime.Now);
-                                    command.Parameters.AddWithValue("@OrderNo", b.orderNo);
+                                    command.Parameters.AddWithValue("@OrderNo", string.Empty);
                                     command.Parameters.AddWithValue("@DeliveryNo", a.dispatchNo);
-                                    command.Parameters.AddWithValue("@DeliveryDateTime", a.expectedDeliveryDate);
+                                    command.Parameters.AddWithValue("@DeliveryDateTime", a.billingDate);
                                     command.Parameters.AddWithValue("@UserID", a.createdBy);
-                                    command.Parameters.AddWithValue("@BillingDocument", a.billingDocument);
-                                    command.Parameters.AddWithValue("@BillingType", a.billingType);
+                                    command.Parameters.AddWithValue("@BillingDocument", string.Empty);
+                                    command.Parameters.AddWithValue("@BillingType", string.Empty);
                                     //command.Parameters.AddWithValue("@BillingDateTime", a.billingDate);
                                     command.Parameters.AddWithValue("@PlantID", a.warehouse.plantNumber);
                                     command.Parameters.AddWithValue("@VendorCode", a.payerCode);
@@ -861,6 +863,7 @@ namespace PSL.GRB.SyncApp
                                     command.Parameters.AddWithValue("@IsProcessedSO", 0);
                                     command.Parameters.AddWithValue("@ModifiedDateTimeSO", DateTime.Now);
                                     command.Parameters.AddWithValue("@ServerDateTimeSO", DateTime.Now);
+                                    command.Parameters.AddWithValue("@WarehouseID", a.warehouse.id);
                                     insertSOCheck = command.ExecuteNonQuery();
                                 }
                                 else
@@ -880,21 +883,37 @@ namespace PSL.GRB.SyncApp
 
                                 if (insertSOCheck != 0 && CheckifEntryExists(a.dispatchNo, ExistsSOCheckQuery))
                                 {
-                                    command.CommandText = INSERT_SOLineItems;
-                                    command.CommandType = System.Data.CommandType.Text;
-                                    command.Parameters.AddWithValue("@ID", Guid.NewGuid());
-                                    command.Parameters.AddWithValue("@SOID_ITEMS", soId);
-                                    command.Parameters.AddWithValue("@SalesDocumentItem", b.orderItemNo);
-                                    command.Parameters.AddWithValue("@OrderQty", b.orderQty);
-                                    command.Parameters.AddWithValue("@ItemCode", b.skuCode);
-                                    command.Parameters.AddWithValue("@ItemDescription", b.skuName);
-                                    command.Parameters.AddWithValue("@IsActive", 1);
-                                    command.Parameters.AddWithValue("@IsProcessed", 1);
-                                    command.Parameters.AddWithValue("@ModifiedDateTime", DateTime.Now);
-                                    command.Parameters.AddWithValue("@ServerDateTime", DateTime.Now);
-                                    command.ExecuteNonQuery();
-                                }
+                                    if(!CheckifLineItemsExists(a.dispatchNo, b.orderItemNo, b.skuCode, ExistsSOItemsCheckQuery))
+                                    {
+                                        command.CommandText = INSERT_SOLineItems;
+                                        command.CommandType = System.Data.CommandType.Text;
+                                        command.Parameters.AddWithValue("@ID", Guid.NewGuid());
+                                        command.Parameters.AddWithValue("@SOID_ITEMS", soId);
+                                        command.Parameters.AddWithValue("@SalesDocumentItem", b.orderItemNo);
+                                        command.Parameters.AddWithValue("@OrderQty", b.qty);
+                                        command.Parameters.AddWithValue("@ItemCode", b.skuCode);
+                                        command.Parameters.AddWithValue("@ItemDescription", b.skuName);
+                                        command.Parameters.AddWithValue("@LoadedQty", 0);
+                                        command.Parameters.AddWithValue("@RecordStatus", b.recordStatus);
+                                        command.Parameters.AddWithValue("@IsActive", 1);
+                                        command.Parameters.AddWithValue("@IsProcessed", 1);
+                                        command.Parameters.AddWithValue("@ModifiedDateTime", DateTime.Now);
+                                        command.Parameters.AddWithValue("@ServerDateTime", DateTime.Now);
+                                        command.ExecuteNonQuery();
+                                    }
+                                    else
+                                    {
+                                        try
+                                        {
+                                            UpdateLineItemsforSO(a.dispatchNo, b.orderItemNo, b.skuCode, b.recordStatus, b.qty);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Psl.Chase.Utils.LogManager.Logger.LogError("WMS Items Update Function() ERROR.:" + ex.ToString());
+                                        }
+                                    }
 
+                                }
                                 retval = true;
                                 // Check Error
                             }
@@ -920,6 +939,59 @@ namespace PSL.GRB.SyncApp
 
             }
         }
+        public bool CheckifLineItemsExists(string dispatchNo, string orderItemNo, string skuCode, string Query)
+        {
+            bool retval = false;
+            Query = Query.Replace("@dispatchNo", dispatchNo);
+            Query = Query.Replace("@orderItemNo", orderItemNo);
+            Query = Query.Replace("@skuCode", skuCode);
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            {
+                SqlCommand command = new SqlCommand(Query, connection);
 
+                connection.Open();
+                retval = Convert.ToBoolean(command.ExecuteScalar());
+                connection.Close();
+            }
+
+            return retval;
         }
+        public bool UpdateLineItemsforSO(string dispatchNo, string orderItemNo, string skuCode, string recordStatus, double qty)
+        {
+            bool retValue = false;
+
+            string existingrecordStatus = string.Empty;
+            double existingQty = 0.0;
+            string Query = "Select SOL.RecordStatus, SOL.OrderQty from SalesOrderLineItems SOL, SalesOrder SO where SO.SOID = SOL.SOID and SO.DeliveryNo = '" + dispatchNo + "' and SOL.SalesDocumentItem = '" +orderItemNo+ "' and SOL.ItemCode = '"+skuCode+"'";
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand(Query, connection);
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        if (reader["RecordStatus"] != DBNull.Value)
+                            existingrecordStatus = Convert.ToString(reader["RecordStatus"]);
+                        if (reader["OrderQty"] != DBNull.Value)
+                            existingQty = Convert.ToDouble(reader["OrderQty"]);
+                    }
+                }
+            }
+
+            if (existingrecordStatus != recordStatus || existingQty != qty)
+            {
+                string updateQuery = "Update SOL set SOL.RecordStatus = '"+ recordStatus+"', SOL.OrderQty = '"+qty+ "' from SalesOrderLineItems SOL, SalesOrder SO where SO.SOID = SOL.SOID and SO.DeliveryNo = '" + dispatchNo + "' and SOL.SalesDocumentItem = '" + orderItemNo + "' and SOL.ItemCode = '" + skuCode + "'";
+                using (SqlConnection connection = new SqlConnection(ConnectionString))
+                {
+                    connection.Open();
+                    SqlCommand command = new SqlCommand(updateQuery, connection);
+                    command.ExecuteNonQuery();
+                    retValue = true;
+                }
+            }
+            return retValue;
+        }
+
+    }
     }

@@ -23,22 +23,23 @@ namespace PSL.GRB.WMS.Service
 
     public class SKUContent
     {
-        public string createdBy { get; set; }
+        public int createdBy { get; set; }
         public DateTime createdAt { get; set; }
-        public string updatedBy { get; set; }
+        public int updatedBy { get; set; }
         public DateTime updatedAt { get; set; }
-        public string id { get; set; }
+        public int id { get; set; }
         public SPU spu { get; set; } //
         public string code { get; set; }
         public string name { get; set; }
-        public string qty { get; set; }
+        public double qty { get; set; }
+        public string recordStatus { get; set; }
         public string unit { get; set; }
         public string height { get; set; }
         public string width { get; set; }
         public string length { get; set; }
         public string volume { get; set; }
-        public string weight { get; set; }
-        public string qtyInPallet { get; set; }
+        public double weight { get; set; }
+        public double qtyInPallet { get; set; }
         public string rotationRate { get; set; }
         public string abcRank { get; set; }
         public string maxShelfLife { get; set; }

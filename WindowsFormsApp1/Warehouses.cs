@@ -29,11 +29,11 @@ namespace PSL.GRB.WMS.Service
 
     public class WHContent
     {
-        public string createdBy { get; set; }
-        public DateTime createdAt { get; set; }
-        public string updatedBy { get; set; }
-        public DateTime updatedAt { get; set; }
-        public string id { get; set; }
+        //public string createdBy { get; set; }
+        //public DateTime createdAt { get; set; }
+        //public string updatedBy { get; set; }
+        //public DateTime updatedAt { get; set; }
+        public int id { get; set; }
         public string plantNumber { get; set; }
         public string name { get; set; }
         public string name1 { get; set; }
@@ -43,9 +43,9 @@ namespace PSL.GRB.WMS.Service
         public string pin { get; set; }
         public string countryCode { get; set; }
         public string regionCode { get; set; }
-        public string warehouseManagerUserId { get; set; }
-        public string contactEmail { get; set; }
-        public string contactPhone { get; set; }
+        //public string warehouseManagerUserId { get; set; }
+        //public string contactEmail { get; set; }
+        //public string contactPhone { get; set; }
 
     }
 }

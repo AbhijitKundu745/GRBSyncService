@@ -72,7 +72,7 @@ namespace PSL.GRB.SyncApp
             this.Controls.Add(this.btnStart);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "frmSync";
-            this.Text = "GRB WMS Sync";
+            this.Text = "GRB WMS Sync(warehouse4)";
             this.ResumeLayout(false);
             this.PerformLayout();
 
